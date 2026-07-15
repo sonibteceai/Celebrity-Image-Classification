@@ -1,251 +1,221 @@
-# 🎭 Celebrity Image Classification using Machine Learning
+# 🎭 Celebrity Image Classification
 
-A machine learning project that classifies celebrity faces from images using **Computer Vision**, **Wavelet Transform**, and **Support Vector Machine (SVM)**. The project also includes a **Streamlit web application** where users can upload an image and receive the predicted celebrity along with prediction probabilities and a sample image from the dataset.
+A Streamlit web application that predicts the celebrity in an uploaded image using **InsightFace (ArcFace)** for feature extraction and a **K-Nearest Neighbors (KNN)** classifier trained on facial embeddings.
 
----
+Supported celebrities:
 
-# 📌 Features
-
-- Upload any celebrity image
-- Automatic face detection
-- Eye detection for reliable face extraction
-- Wavelet Transform feature extraction
-- SVM-based classification
-- Prediction probabilities
-- Displays a similar image from the dataset
-- Streamlit web interface
+- Lionel Messi
+- Maria Sharapova
+- Roger Federer
+- Serena Williams
+- Virat Kohli
 
 ---
 
-# 🛠️ Technologies Used
+# 🚀 Live Demo
 
-- Python
-- OpenCV
-- Haar Cascade Classifiers
-- NumPy
-- PyWavelets
-- Scikit-learn
-- Matplotlib
-- Joblib
-- Streamlit
+🔗 **Live App:** https://celebrity-image-classification.streamlit.app/
+
+🔗 **GitHub Repository:** https://github.com/sonibteceai/Celebrity-Image-Classification
 
 ---
 
 # 📂 Project Structure
 
-```
-CelebrityClassification/
+```text
+Celebrity-Image-Classification/
+│
+├── main.py                         # Streamlit application
+├── util.py                         # Prediction & preprocessing functions
+├── requirements.txt
+├── README.md
+├── .gitignore
+│
+├── model/
+│   ├── knn_arcface.pkl             # Trained KNN model
+│   ├── class_dictionary.pkl        # Class dictionary
+│   └── buffalo_l/                  # InsightFace pretrained model
 │
 ├── dataset/
 │   ├── Lionel Messi/
 │   ├── Maria Sharapova/
 │   ├── Roger Federer/
 │   ├── Serena Williams/
-│   └── Virat Kholi/
+│   └── Virat Kohli/
 │
-├── test dataset/
+├── uploads/                        # Temporary uploaded images
 │
-├── model/
-│   ├── celeb_classifier_model.pkl
-│   ├── class_dictionary.pkl
-│   ├── haarcascade_eye.xml
-│   └── haarcascade_frontalface_default.xml
-│
-├── uploads/
-│
-├── util.py
-├── main.py
-├── requirements.txt
-└── README.md
+└── pretrain_model_folder/
+    ├── pretrained_model.ipynb      # Training notebook
+    ├── evaluation.ipynb            # Model evaluation notebook
+    ├── knn_arcface.pkl
+    └── class_dictionary.pkl
 ```
 
 ---
 
-# 📊 Dataset
+# 🧠 Machine Learning Pipeline
 
-The project contains images of five celebrities.
-
-| Celebrity | Images |
-|-----------|-------:|
-| Lionel Messi | 21 |
-| Maria Sharapova | 22 |
-| Roger Federer | 9 |
-| Serena Williams | 18 |
-| Virat Kohli | 11 |
-
-Total Training Images: **81**
-
-An additional unseen test dataset was used for evaluation.
-
----
-
-# 🔄 Workflow
-
-```
-Image
-   │
-   ▼
-Face Detection
-   │
-   ▼
-Eye Detection
-   │
-   ▼
-Crop Face
-   │
-   ▼
-Resize (32×32)
-   │
-   ▼
-Wavelet Transform
-   │
-   ▼
-Feature Extraction
-   │
-   ▼
-4096-Dimensional Feature Vector
-   │
-   ▼
-SVM Classifier
-   │
-   ▼
-Prediction
+```text
+Input Image
+      │
+      ▼
+InsightFace (buffalo_l)
+      │
+      ▼
+SCRFD Face Detection
+      │
+      ▼
+Face Alignment
+      │
+      ▼
+ArcFace
+(512-D Face Embedding)
+      │
+      ▼
+K-Nearest Neighbors (KNN)
+      │
+      ▼
+Celebrity Prediction
+      │
+      ▼
+Prediction Probabilities
 ```
 
 ---
 
-# 🖼️ Image Preprocessing
+# 🔬 Model Training
 
-Each uploaded image undergoes the following preprocessing steps:
+Instead of manually designing image features, the project uses **ArcFace**, a pretrained face recognition model.
 
-### 1. Face Detection
+Each detected face is converted into a **512-dimensional embedding**, which is then used to train multiple machine learning classifiers.
 
-Haar Cascade detects all faces.
+The following models were compared using **GridSearchCV (5-Fold Cross Validation)**:
 
-### 2. Eye Detection
-
-Only faces with **at least two detected eyes** are accepted.
-
-### 3. Face Cropping
-
-The detected face is cropped.
-
-### 4. Resize
-
-The cropped face is resized to
-
-```
-32 × 32
-```
-
-### 5. Wavelet Transform
-
-A Haar Wavelet Transform extracts texture information.
-
-### 6. Feature Vector
-
-The RGB image and wavelet image are stacked together.
-
-Final feature vector size:
-
-```
-3072 + 1024 = 4096 Features
-```
-
----
-
-# 🤖 Model Training
-
-Three machine learning models were evaluated using **GridSearchCV**.
-
-## Models Compared
-
+- K-Nearest Neighbors (KNN)
 - Support Vector Machine (SVM)
 - Logistic Regression
+- Random Forest
 - Decision Tree
+- Gaussian Naive Bayes
+
+The best-performing model was selected for deployment.
 
 ---
 
-# Grid Search Results
+# 📊 Model Comparison
 
-| Model | Cross Validation Score |
-|--------|----------------------:|
-| Support Vector Machine | **0.7954** |
-| Logistic Regression | 0.7886 |
-| Decision Tree | 0.5547 |
-
-Best model:
-
-```
-Support Vector Machine (Linear Kernel)
-```
-
-Best Parameters
-
-```python
-{
-    'classifier__C': 1,
-    'classifier__gamma': 'scale',
-    'classifier__kernel': 'linear'
-}
-```
+| Model | Cross Validation Score | Test Accuracy |
+|--------|-----------------------:|--------------:|
+| **KNN** | **96.8%** | **97.8%** |
+| Logistic Regression | 96.8% | 95.7% |
+| SVM | 96.5% | 95.7% |
+| Random Forest | 96.5% | 96.8% |
+| Gaussian Naive Bayes | 95.7% | 96.8% |
+| Decision Tree | 84.4% | 87.1% |
 
 ---
 
-# 📈 Performance
+# 🔄 Project Evolution
 
-### Training Accuracy
+## Version 1 (Classical Computer Vision)
 
-```
-85.29%
-```
+### Face Detection
 
-### Test Accuracy (Unseen Images)
+- Haar Cascade
+- Eye Detection
+- Required at least two visible eyes
 
-```
-92.86%
-```
+### Feature Extraction
+
+- Raw Image (32×32)
+- Wavelet Transform
+- Combined into a 4096-dimensional feature vector
+
+### Classifier
+
+- Support Vector Machine (SVM)
+
+### Limitations
+
+- Sensitive to lighting conditions
+- Failed when eyes were partially closed
+- Failed on profile faces
+- Lower accuracy on unseen images
 
 ---
 
-# Confusion Matrix
+## Version 2 (Deep Learning + Machine Learning)
 
-```
-[[9 0 0 0 0]
- [0 8 1 1 0]
- [0 0 5 0 0]
- [0 2 0 3 0]
- [1 0 0 0 3]]
-```
+### Face Detection
 
----
+- InsightFace (SCRFD Detector)
 
-# Prediction Example
+### Face Alignment
 
-```
-Predicted Celebrity
+- Automatic facial landmark alignment
 
-Virat Kohli
+### Feature Extraction
 
-Prediction Probabilities
+- ArcFace Pretrained Model
+- 512-dimensional embeddings
 
-Virat Kohli        60.00%
-Roger Federer      22.30%
-Lionel Messi       15.09%
-Serena Williams     1.86%
-Maria Sharapova     0.75%
-```
+### Classifier
+
+- K-Nearest Neighbors (KNN)
+
+### Advantages
+
+- Better accuracy
+- Robust to pose variations
+- Works under different lighting conditions
+- No eye detection required
+- Faster inference
+- Smaller feature vector (512 vs 4096)
 
 ---
 
 # 🌐 Streamlit Web Application
 
-The application allows users to
+The web application allows users to:
 
 - Upload an image
-- Detect the celebrity
+- Detect the face automatically
+- Predict the celebrity
 - Display prediction probabilities
-- Show a sample image from the dataset
+- Show a related celebrity image from the dataset
+
+---
+
+# 🛠 Technologies Used
+
+- Python
+- Streamlit
+- InsightFace
+- ArcFace
+- OpenCV
+- NumPy
+- Scikit-learn
+- Joblib
+- Pillow
+
+---
+
+# 📦 Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/sonibteceai/Celebrity-Image-Classification.git
+
+cd Celebrity-Image-Classification
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
 
 Run the application:
 
@@ -255,206 +225,60 @@ streamlit run main.py
 
 ---
 
-# ⚠️ Challenges Faced & Debugging
+# 📈 Retraining the Model
+
+To train the model on new data:
+
+1. Add images to the `dataset` folder.
+2. Open `pretrain_model_folder/pretrained_model.ipynb`.
+3. Generate ArcFace embeddings.
+4. Run GridSearchCV.
+5. Save the best model.
+
+```python
+joblib.dump(best_model, "knn_arcface.pkl")
+joblib.dump(class_dict, "class_dictionary.pkl")
+```
+
+Copy these files into the `model/` directory before running the Streamlit app.
+
+---
+
+# 🐞 Challenges & Debugging
 
 During development, several issues were encountered and resolved:
 
-### 1. Face Detection
-
-Some images contained multiple faces or no detectable faces.
-
-**Solution**
-
-Accepted only faces with **two detected eyes**.
-
----
-
-### 2. Folder Name Mismatch
-
-Example
-
-```
-Virat Kohli
-```
-
-vs
-
-```
-virat kholi
-```
-
-This caused
-
-```
-KeyError
-```
-
-**Solution**
-
-Created a consistent class dictionary and mapping.
+- Fixed OpenCV installation issues (`CascadeClassifier` errors).
+- Migrated from Haar Cascade to InsightFace for better detection.
+- Switched from handcrafted wavelet features to ArcFace embeddings.
+- Compared six machine learning classifiers using GridSearchCV.
+- Solved model serialization using Joblib.
+- Fixed Streamlit deployment issues.
+- Used `opencv-python-headless` for cloud deployment compatibility.
+- Improved prediction confidence using classifier probabilities.
 
 ---
 
-### 3. GridSearchCV Prediction
+# 📌 Future Improvements
 
-Attempting to use
-
-```python
-class_dict[prediction]
-```
-
-produced errors because `GridSearchCV` is not a dictionary.
-
-**Solution**
-
-Used
-
-```python
-best_estimator_
-```
-
-and maintained a reverse class mapping.
-
----
-
-### 4. SVM Probability
-
-Initially,
-
-```python
-predict_proba()
-```
-
-was unavailable.
-
-**Solution**
-
-Retrained the model using
-
-```python
-SVC(probability=True)
-```
-
----
-
-### 5. OpenCV Installation
-
-Encountered
-
-```
-AttributeError:
-module 'cv2' has no attribute 'CascadeClassifier'
-```
-
-Root cause
-
-- Python 3.14 installed OpenCV 5.0 preview.
-
-Solution
-
-- Switched to Python 3.12
-- Installed
-
-```bash
-opencv-python==4.10.0.84
-```
-
----
-
-### 6. Streamlit Environment
-
-Virtual environment mismatch caused import issues.
-
-Solution
-
-Created a fresh virtual environment and reinstalled dependencies.
-
----
-
-### 7. Probability Calibration Warning
-
-Scikit-learn warning
-
-```
-probability=True
-```
-
-is deprecated.
-
-Future improvement
-
-Use
-
-```python
-CalibratedClassifierCV
-```
-
-instead.
-
----
-
-# 🚀 Future Improvements
-
-- Deep Learning (CNN)
-- FaceNet embeddings
-- MobileNetV3
-- MTCNN face detector
-- Real-time webcam prediction
-- Multi-face detection
-- Deploy on Streamlit Community Cloud
-- Docker support
-- REST API using FastAPI
-
----
-
-# ▶️ Installation
-
-Clone the repository
-
-```bash
-git clone https://github.com/<your-username>/Celebrity-Image-Classification.git
-```
-
-Move into the project
-
-```bash
-cd Celebrity-Image-Classification
-```
-
-Create a virtual environment
-
-```bash
-python -m venv .venv
-```
-
-Activate
-
-Windows
-
-```bash
-.venv\Scripts\activate
-```
-
-Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-Run
-
-```bash
-streamlit run main.py
-```
+- Add more celebrities.
+- Support multiple face detection in one image.
+- Fine-tune a deep learning classifier.
+- Add Grad-CAM or embedding visualization.
+- Display Top-3 predictions with confidence.
+- Use FAISS for fast nearest-neighbor search on larger datasets.
+- Add webcam support.
 
 ---
 
 # 👨‍💻 Author
 
-**soni kumari**
+**Soni B.Tech ECE AI Student**
 
-Machine Learning & Computer Vision Project
+GitHub: https://github.com/sonibteceai
 
 ---
 
-# ⭐ If you found this project useful, consider giving it a star!
+# ⭐ If you like this project
+
+Please consider giving the repository a **Star ⭐**.
